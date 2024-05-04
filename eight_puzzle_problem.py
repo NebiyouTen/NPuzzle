@@ -1,20 +1,29 @@
 import numpy as np
 
 class State:
-    def __init__(self, N = 3, state = None):
+    def __init__(self, N = 3, state = None, moved = None, move_history = ''):
         if state is not None:
             assert state.shape == (N,N)
 
             self.state = np.copy(state)
+
         else:
             nums = np.arange(N**2)
             np.random.shuffle(nums)
 
             self.state = nums.reshape(N,N)
+            self.move_history = ""
 
         self.state = self.state.astype(np.int32)
         self.N = N
         self.blank_loc = self.get_blank_loc(self.state)
+        self.moved = moved
+        self.move_history = move_history
+
+        if moved :
+            if len(self.move_history) > 0:
+                self.move_history += "->"
+            self.move_history += moved
 
     def get_blank_loc(self, state):
         i, j = np.where(state == 0)
@@ -51,20 +60,20 @@ class NPuzzle:
         if right_state:
             expanded_states.append(right_state)
 
-        down_state = self.move_down(state)
-        if down_state:
-            expanded_states.append(down_state)
-
         up_state = self.move_up(state)
         if up_state:
             expanded_states.append(up_state)
+
+        down_state = self.move_down(state)
+        if down_state:
+            expanded_states.append(down_state)
 
         return expanded_states
 
     def move_left(self, state):
         i,j = state.blank_loc
 
-        if j == 0:
+        if j == 0 or state.moved == "R":
             return None
 
         new_state = np.copy(state.state)
@@ -72,12 +81,12 @@ class NPuzzle:
         new_state[i,j] = new_state[i, j-1]
         new_state[i, j - 1] = 0
 
-        return State(state=new_state)
+        return State(state=new_state, moved = "L", move_history = state.move_history)
 
     def move_right(self, state):
         i,j = state.blank_loc
 
-        if j == state.N - 1:
+        if j == state.N - 1 or state.moved == "L":
             return None
 
         new_state = np.copy(state.state)
@@ -85,12 +94,12 @@ class NPuzzle:
         new_state[i, j] = new_state[i, j+1]
         new_state[i, j+1] = 0
 
-        return State(state=new_state)
+        return State(state=new_state, moved = "R", move_history = state.move_history)
 
     def move_up(self, state):
         i,j = state.blank_loc
 
-        if i == 0:
+        if i == 0 or state.moved == "D":
             return None
 
         new_state = np.copy(state.state)
@@ -98,12 +107,12 @@ class NPuzzle:
         new_state[i, j] = new_state[i-1, j]
         new_state[i-1,j] = 0
 
-        return State(state=new_state)
+        return State(state=new_state, moved = "U", move_history = state.move_history)
 
     def move_down(self,state):
         i,j = state.blank_loc
 
-        if i == state.N - 1:
+        if i == state.N - 1 or state.moved == "U":
             return None
 
         new_state = np.copy(state.state)
@@ -111,4 +120,4 @@ class NPuzzle:
         new_state[i, j] = new_state[i+1, j]
         new_state[i+1,j] = 0
 
-        return State(state=new_state)
+        return State(state=new_state, moved = "D", move_history = state.move_history)
