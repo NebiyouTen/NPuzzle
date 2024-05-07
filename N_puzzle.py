@@ -5,8 +5,9 @@ import numpy as np
 import queue
 import time
 import heapq
+import uuid
 
-from eight_puzzle_problem import NPuzzle
+from N_puzzle_problem import NPuzzle
 from heuristics import Manhattan, MisplacedTiles, Uniform, get_heuristic
 
 FAILURE_RESULT = "failure"
@@ -45,6 +46,9 @@ class Node:
         self.state = state
         self.depth = depth
         self.heuristic_func = heuristic_func
+        self.heuristic = self.heuristic_func(state.state)
+        self.is_expanded = False
+
     @staticmethod
     def CreateNodes(states, depth,  heuristic_func):
         return [ Node(state, depth+1, heuristic_func) for state in states  ]
@@ -52,9 +56,13 @@ class Node:
         return self.state
 
     def __lt__(self, other):
-        self_f_n = self.depth + self.heuristic_func(self.state.state)
-        other_f_n = other.depth + self.heuristic_func(other.state.state)
+        self_f_n = self.depth + self.heuristic
+        other_f_n = other.depth + other.heuristic
 
+        # print("self, other ", self.depth , self.heuristic,other.depth , other.heuristic , self_f_n, other_f_n)
+
+        # if self_f_n == other_f_n:
+        #     return self.depth <= other.depth
         return self_f_n < other_f_n
 
 class NodesQueue:
@@ -107,32 +115,44 @@ def general_search(problem, heuristic , search_algorithm):
     count = 0
     solution = Solution()
     solution.initial_state = node
+    iter = 0
+    nodes_so_far = {}
     while True:
         if len(nodes) == 0:
             return FAILURE_RESULT
 
         node = nodes.get_front()
 
-        # print("Get front ", node.state.state)
+        exists = False
+        for key, arr in nodes_so_far.items():
+            if np.array_equal(arr, node.state.state):
+                exists = True
+                break
+
+        if not exists:
+            nodes_so_far[iter] = node.state.state
+
+        print(f"iter: {iter}, dequeue: ", node.state.state, f"exp: {solution.num_nodes_expanded}", f"{len(nodes)}/{solution.max_queue_size}")
 
         is_golden_state = problem.is_golden_state(node.state)
 
-        print(str(node.state.state), end='\r\033[2A')
+        # print(str(node.state.state), end='\r\033[2A')
 
         if is_golden_state:
             solution.set_golden_state(node)
             return solution
 
-        expanded_states = problem.expand(node.state)
+        if not exists:
+            expanded_states = problem.expand(node.state)
 
-        expanded_nodes = Node.CreateNodes(expanded_states, node.depth, heuristic)
-        solution.num_nodes_expanded += 1
+            expanded_nodes = Node.CreateNodes(expanded_states, node.depth, heuristic)
+            solution.num_nodes_expanded += 1
+            node.is_expanded = True
 
-        nodes.queue(expanded_nodes)
-        solution.set_max_queue_size(len(nodes))
-        # count += 1
-        # if count > 200:
-        #     break
+            nodes.queue(expanded_nodes)
+            solution.set_max_queue_size(len(nodes))
+
+        iter += 1
 
 def main(args):
     '''
@@ -149,10 +169,16 @@ def main(args):
     # init_state = np.array([[0,7,2],[4,6,1],[3,5,8]])
     # init_state = np.array([[4,1,2],[5,3,0],[7,8,6]])
     # init_state = np.array([[1,2,0],[4,5,3],[7,8,6]])
-    init_state = np.array([[1,5,2],[4,8,7],[6,3,0]])
+    if len(args.initial_state) > 0:
+        N = int((args.N+1)**0.5)
+        l = (list(map(int, args.initial_state.split(','))))
+        init_state = np.array(l).reshape(N, N)
+    else:
+        init_state = np.array([[1,5,2],[4,8,7],[6,3,0]])
+    # init_state = np.array([[1,2,3],[4,5,6],[0,7,8]])
     # init_state = None
 
-    problem = NPuzzle(init_state = init_state)
+    problem = NPuzzle(init_state = init_state, N=N)
     heuristic = get_heuristic(args.heuristic, problem.golden_state.state)
     result = general_search(problem, heuristic, args.algorithm)
 
@@ -174,6 +200,12 @@ if __name__ == "__main__":
     parser.add_argument("--heuristic", default = None,
             choices = [None, 'misplaced_tile', 'manhattan'],
             help="heuristic ignored if algorithm is uniform")
+    parser.add_argument("--N", default = 8,
+            type = int,
+            help="N-puzzle. Values: 8, 15, 25-puzzle games")
+    parser.add_argument("--initial_state", default = "",
+            type = str,
+            help="CSV of initial state. E.g. Golden state will be '1,2,3,4,5,6,7,8,0'")
     args = parser.parse_args()
 
     main(args)

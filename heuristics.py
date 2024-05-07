@@ -55,6 +55,7 @@ if __name__ == "__main__":
 
     state_1 = np.array([[1,2,3],[4,5,6],[7,0,8]])
     state_2 = np.array([[2,1,0],[4,5,6],[7,8,3]])
+    state_3 = np.array([[1,5,2],[4,8,7],[6,3,0]])
 
     misplaced_tiles =MisplacedTiles(golden_state)
     manhattan =Manhattan(golden_state)
@@ -63,6 +64,7 @@ if __name__ == "__main__":
     print(misplaced_tiles(state_1))
     print(misplaced_tiles(state_2))
 
-    state_3 = np.array([[3,2,8],[4,5,6],[7,1,0]])
-    print(manhattan(state_3))
+    state_4 = np.array([[3,2,8],[4,5,6],[7,1,0]])
     print(manhattan(golden_state))
+    print(manhattan(state_3))
+    print(manhattan(state_4))

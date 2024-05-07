@@ -3,7 +3,7 @@ import numpy as np
 class State:
     def __init__(self, N = 3, state = None, moved = None, move_history = ''):
         if state is not None:
-            assert state.shape == (N,N)
+            assert state.shape == (N,N), f"{state.shape} != {(N,N)}"
 
             self.state = np.copy(state)
 
@@ -39,8 +39,8 @@ class NPuzzle:
         golden_state = np.zeros(N**2)
         golden_state[:-1] = np.arange(N**2)[1:]
 
-        self.init_state = State(state=init_state)
-        self.golden_state = State(state=golden_state.reshape(N,N))
+        self.init_state = State(state=init_state, N = N)
+        self.golden_state = State(state=golden_state.reshape(N,N), N = N)
 
     def is_golden_state(self, state):
         # print("Equal ", state.state, self.golden_state.state, np.array_equal(state.state, self.golden_state.state))
@@ -81,7 +81,7 @@ class NPuzzle:
         new_state[i,j] = new_state[i, j-1]
         new_state[i, j - 1] = 0
 
-        return State(state=new_state, moved = "L", move_history = state.move_history)
+        return State(N = state.N, state=new_state, moved = "L", move_history = state.move_history)
 
     def move_right(self, state):
         i,j = state.blank_loc
@@ -94,7 +94,7 @@ class NPuzzle:
         new_state[i, j] = new_state[i, j+1]
         new_state[i, j+1] = 0
 
-        return State(state=new_state, moved = "R", move_history = state.move_history)
+        return State(N = state.N, state=new_state, moved = "R", move_history = state.move_history)
 
     def move_up(self, state):
         i,j = state.blank_loc
@@ -107,7 +107,7 @@ class NPuzzle:
         new_state[i, j] = new_state[i-1, j]
         new_state[i-1,j] = 0
 
-        return State(state=new_state, moved = "U", move_history = state.move_history)
+        return State(N = state.N, state=new_state, moved = "U", move_history = state.move_history)
 
     def move_down(self,state):
         i,j = state.blank_loc
@@ -120,4 +120,4 @@ class NPuzzle:
         new_state[i, j] = new_state[i+1, j]
         new_state[i+1,j] = 0
 
-        return State(state=new_state, moved = "D", move_history = state.move_history)
+        return State(N = state.N, state=new_state, moved = "D", move_history = state.move_history)
