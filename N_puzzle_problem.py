@@ -1,6 +1,16 @@
+'''
+    N_puzzle_search.py
+
+    This module contains the following modules:
+        State: The problem state and move history
+        NPuzzle: Implementation of operators
+'''
 import numpy as np
 
 class State:
+    '''
+        State object for NPuzzle
+    '''
     def __init__(self, N = 3, state = None, moved = None, move_history = ''):
         if state is not None:
             assert state.shape == (N,N), f"{state.shape} != {(N,N)}"
@@ -33,6 +43,11 @@ class State:
         return np.array_str(self.state)
 
 class NPuzzle:
+    '''
+        NPuzzle:
+            checks if we are in a golden state
+            expands nodes
+    '''
     def __init__(self, N = 3, init_state = None):
 
         self.N = N
@@ -43,7 +58,6 @@ class NPuzzle:
         self.golden_state = State(state=golden_state.reshape(N,N), N = N)
 
     def is_golden_state(self, state):
-        # print("Equal ", state.state, self.golden_state.state, np.array_equal(state.state, self.golden_state.state))
         return np.array_equal(state.state, self.golden_state.state)
 
     def expand(self, state):
@@ -71,6 +85,10 @@ class NPuzzle:
         return expanded_states
 
     def move_left(self, state):
+        '''
+            Move blank to left and return state .
+            If previous move was right, ignore.
+        '''
         i,j = state.blank_loc
 
         if j == 0 or state.moved == "R":
@@ -84,6 +102,10 @@ class NPuzzle:
         return State(N = state.N, state=new_state, moved = "L", move_history = state.move_history)
 
     def move_right(self, state):
+        '''
+            Move blank to right and return state .
+            If previous move was left, ignore.
+        '''
         i,j = state.blank_loc
 
         if j == state.N - 1 or state.moved == "L":
@@ -97,6 +119,10 @@ class NPuzzle:
         return State(N = state.N, state=new_state, moved = "R", move_history = state.move_history)
 
     def move_up(self, state):
+        '''
+            Move blank to up and return state .
+            If previous move was down, ignore.
+        '''
         i,j = state.blank_loc
 
         if i == 0 or state.moved == "D":
@@ -110,6 +136,10 @@ class NPuzzle:
         return State(N = state.N, state=new_state, moved = "U", move_history = state.move_history)
 
     def move_down(self,state):
+        '''
+            Move blank to down and return state .
+            If previous move was up, ignore.
+        '''
         i,j = state.blank_loc
 
         if i == state.N - 1 or state.moved == "U":

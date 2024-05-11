@@ -1,6 +1,12 @@
+'''
+    heuristics.py. Implementation of different heuristics.
+'''
 import numpy as np
 
 class MisplacedTiles:
+    '''
+        Misplaced tile heuritic
+    '''
     def __init__(self, golden_state):
         self.golden_state = golden_state
 
@@ -11,6 +17,9 @@ class MisplacedTiles:
         return "Misplaced Tile heuristic"
 
 class Manhattan:
+    '''
+        Manhattan Distance heuristic
+    '''
     def __init__(self, golden_state):
         self.golden_state = golden_state
 
@@ -35,6 +44,9 @@ class Manhattan:
         return "Manhattan Distance heuristic"
 
 class Uniform:
+    '''
+        Uniform Cost
+    '''
     def __call__(self, state):
         return 0
 
