@@ -14,6 +14,7 @@ A sliding tile puzzle is a mechanical toy with an $n \times n$ grid, where $n=2,
 Ensure you have these libraries installed to run the code successfully. You can install them using pip.
 
 
+
 ### Executing program
 
 Run the following commands to execute the program
@@ -35,8 +36,10 @@ python3 main.py --algorithm a_star --heuristic manhattan
 
 ##### To run 15-puzzle simply run
 ```
-  python3 main.py --algorithm a_star --heuristic manhattan --initial_state  \    "1,2,3,4,5,6,7,8,0,9,10,11,12,13,15,14"  --N 15
+  python3 main.py --algorithm a_star --heuristic manhattan --initial_state  \
+      "1,2,3,4,5,6,7,8,0,9,10,11,12,13,15,14"  --N 15
 ```
+
 ## Help
 
 For more information and debug commands run with
