@@ -1,3 +1,13 @@
+'''
+    N_puzzle_search
+
+    This module uses a generic algorithm to implement N-puzzle search.
+        Solution: Object to track and store progress as well as solution.
+        Node: Implements a node of the search algorithm.
+        NodesQueue: FIFO or priority queue implementation.
+        general_search: A general search algorithm function.
+'''
+
 import os
 import sys
 import argparse
@@ -5,7 +15,6 @@ import numpy as np
 import queue
 import time
 import heapq
-import uuid
 
 from N_puzzle_problem import NPuzzle
 from heuristics import Manhattan, MisplacedTiles, Uniform, get_heuristic
@@ -13,6 +22,9 @@ from heuristics import Manhattan, MisplacedTiles, Uniform, get_heuristic
 FAILURE_RESULT = "failure"
 
 class Solution:
+    '''
+        Solutions track progress and provide relevant analytics
+    '''
     def __init__(self):
         self.start_time = time.time()
         self.solution_state = None
@@ -42,6 +54,9 @@ class Solution:
         return result
 
 class Node:
+    '''
+        Node stores node state, depth, and heuritic value.
+    '''
     def __init__(self, state, depth,  heuristic_func):
         self.state = state
         self.depth = depth
@@ -59,15 +74,13 @@ class Node:
         self_f_n = self.depth + self.heuristic
         other_f_n = other.depth + other.heuristic
 
-        # print("self, other ", self.depth , self.heuristic,other.depth , other.heuristic , self_f_n, other_f_n)
-
-        # if self_f_n == other_f_n:
-        #     return self.depth <= other.depth
         return self_f_n < other_f_n
 
 class NodesQueue:
+    '''
+        FIFO or priority queue depending on the search algorithm
+    '''
     def __init__(self, nodes, algorithm):
-        print("creating nodes ", nodes)
         if algorithm == "a_star":
             self.nodes_queue = []
             for node in nodes:
@@ -101,48 +114,73 @@ class NodesQueue:
 
     def CreateQueue(nodes, algorithm):
         if algorithm in ["uniform", "a_star"]:
-            print("create FIFO queue ")
             return NodesQueue(nodes, algorithm)
         raise ValueError(f'Invalid {queue_func}')
 
-def general_search(problem, heuristic , search_algorithm):
+def general_search(problem, heuristic , search_algorithm, debug = False, check_repeated = False):
+    """
+        Perform a general search algorithm on NPuzzle problem.
+
+        Args:
+            problem: An instance of the problem to be solved.
+            heuristic: A heuristic function used by the search algorithm.
+            search_algorithm: The search algorithm to be used.
+            debug (optional): A flag indicating whether to print debug information. Default is False.
+            check_repeated (optional): A flag indicating whether to check for repeated states during the search. Default is False.
+
+        Returns:
+            A solution state or None if no solution is found.
+    """
+
+    # create nodes
     node = Node(problem.init_state, 0, heuristic)
     nodes = NodesQueue.CreateQueue([node], search_algorithm)
-    print("Initial state: ", problem.init_state)
 
-    print("="*15, f"Starting search: {search_algorithm} ", "="*15)
+    if debug:
+        print("Initial state: ", problem.init_state)
+        print("="*15, f"Starting search: {search_algorithm} ", "="*15)
 
     count = 0
+
+    # create and track solution objdct
     solution = Solution()
     solution.initial_state = node
     iter = 0
     nodes_so_far = {}
+
+    # search loop
     while True:
         if len(nodes) == 0:
             return FAILURE_RESULT
 
+        # dequeue front node
         node = nodes.get_front()
 
         exists = False
-        for key, arr in nodes_so_far.items():
-            if np.array_equal(arr, node.state.state):
-                exists = True
-                break
+        # If check_repeated flag, search for repeated. Doesn't really help much.
+        if check_repeated:
+            for key, arr in nodes_so_far.items():
+                if np.array_equal(arr, node.state.state):
+                    exists = True
+                    break
 
         if not exists:
             nodes_so_far[iter] = node.state.state
 
-        print(f"iter: {iter}, dequeue: ", node.state.state, f"exp: {solution.num_nodes_expanded}", f"{len(nodes)}/{solution.max_queue_size}")
+        if debug:
+            print(f"iter: {iter}, dequeued: ", node.state.state, f" g(n)={node.depth} , h(n)={node.heuristic} " ,f"exp: {solution.num_nodes_expanded}", f"{len(nodes)}/{solution.max_queue_size}")
 
         is_golden_state = problem.is_golden_state(node.state)
 
-        # print(str(node.state.state), end='\r\033[2A')
-
+        # check for golden state
         if is_golden_state:
             solution.set_golden_state(node)
             return solution
 
+        # expand nodes and add children to queue.
         if not exists:
+            if debug:
+                print("Expanding node: ", node.state)
             expanded_states = problem.expand(node.state)
 
             expanded_nodes = Node.CreateNodes(expanded_states, node.depth, heuristic)
@@ -153,59 +191,3 @@ def general_search(problem, heuristic , search_algorithm):
             solution.set_max_queue_size(len(nodes))
 
         iter += 1
-
-def main(args):
-    '''
-
-    '''
-    print('args: ', args)
-    # init_state = np.arange(9).reshape(3,3)
-    # init_state = np.array([[1,2,3],[4,5,6],[7,8,0]])
-    # init_state = np.array([[1,2,3],[4,5,6],[0,7,8]])
-    # init_state = np.array([[1,3,6],[5,0,2],[4,7,8]])
-    # init_state = np.array([[1,3,6],[5,0,7],[4,8,2]])
-    # init_state = np.array([[1,6,7],[5,0,3],[4,8,2]])
-    # init_state = np.array([[7,1,2],[4,8,5],[6,3,0]])
-    # init_state = np.array([[0,7,2],[4,6,1],[3,5,8]])
-    # init_state = np.array([[4,1,2],[5,3,0],[7,8,6]])
-    # init_state = np.array([[1,2,0],[4,5,3],[7,8,6]])
-    if len(args.initial_state) > 0:
-        N = int((args.N+1)**0.5)
-        l = (list(map(int, args.initial_state.split(','))))
-        init_state = np.array(l).reshape(N, N)
-    else:
-        init_state = np.array([[1,5,2],[4,8,7],[6,3,0]])
-    # init_state = np.array([[1,2,3],[4,5,6],[0,7,8]])
-    # init_state = None
-
-    problem = NPuzzle(init_state = init_state, N=N)
-    heuristic = get_heuristic(args.heuristic, problem.golden_state.state)
-    result = general_search(problem, heuristic, args.algorithm)
-
-
-    if result == FAILURE_RESULT:
-        print("Can not solve puzzle")
-
-
-    elpased_time = result.end_time - result.start_time
-    print("\n\n\n", "="*15, f"Solved ", "="*15)
-    print("Summary: " , result)
-    print(f"Agorithm: {args.algorithm}, heuristic: ", heuristic)
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--algorithm", default = 'uniform',
-            choices = ['uniform', 'a_star'],
-            help="search algorithm to use")
-    parser.add_argument("--heuristic", default = None,
-            choices = [None, 'misplaced_tile', 'manhattan'],
-            help="heuristic ignored if algorithm is uniform")
-    parser.add_argument("--N", default = 8,
-            type = int,
-            help="N-puzzle. Values: 8, 15, 25-puzzle games")
-    parser.add_argument("--initial_state", default = "",
-            type = str,
-            help="CSV of initial state. E.g. Golden state will be '1,2,3,4,5,6,7,8,0'")
-    args = parser.parse_args()
-
-    main(args)

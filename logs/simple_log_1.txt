@@ -1,0 +1,40 @@
+args:  Namespace(algorithm='a_star', heuristic='misplaced_tile', N=8, initial_state='1,2,3,4,5,6,0,7,8', debug=True, check_repeated=False)
+Initial state:  [[1 2 3]
+ [4 5 6]
+ [0 7 8]]
+=============== Starting search: a_star  ===============
+iter: 0, dequeued:  [[1 2 3]
+ [4 5 6]
+ [0 7 8]]  g(n)=0 , h(n)=2  exp: 0 0/0
+Expanding node:  [[1 2 3]
+ [4 5 6]
+ [0 7 8]]
+iter: 1, dequeued:  [[1 2 3]
+ [4 5 6]
+ [7 0 8]]  g(n)=1 , h(n)=1  exp: 1 1/2
+Expanding node:  [[1 2 3]
+ [4 5 6]
+ [7 0 8]]
+iter: 2, dequeued:  [[1 2 3]
+ [4 5 6]
+ [7 8 0]]  g(n)=2 , h(n)=0  exp: 2 2/3
+
+
+
+ =============== Solved  ===============
+Summary:  
+	Solution state: 
+[[1 2 3]
+ [4 5 6]
+ [7 8 0]]
+	 initial_state: 
+[[1 2 3]
+ [4 5 6]
+ [0 7 8]]
+	 depth: 2
+	 num_nodes_expanded: 2
+	 elapsed_time: 0.0 secs
+	 max_queue_size: 3
+	 moves: R->R
+
+Agorithm: a_star, heuristic:  Misplaced Tile heuristic
